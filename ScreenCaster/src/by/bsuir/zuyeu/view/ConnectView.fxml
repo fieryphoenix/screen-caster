@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="140.0" prefWidth="431.0" styleClass="background" xmlns:fx="http://javafx.com/fxml" fx:controller="by.bsuir.zuyeu.controller.ConnectController">
+  <!-- TODO Add Nodes -->
+  <children>
+    <MenuBar blendMode="SRC_ATOP" prefHeight="26.0" prefWidth="431.0">
+      <effect>
+        <InnerShadow />
+      </effect>
+      <menus>
+        <Menu mnemonicParsing="false" text="File">
+          <items>
+            <MenuItem mnemonicParsing="false" text="Close" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Settings">
+          <items>
+            <MenuItem mnemonicParsing="false" text="Action 1" />
+          </items>
+        </Menu>
+        <Menu mnemonicParsing="false" text="Help">
+          <items>
+            <MenuItem mnemonicParsing="false" text="About" />
+          </items>
+        </Menu>
+      </menus>
+    </MenuBar>
+    <ImageView fitHeight="60.50000762939453" fitWidth="270.7222468880218" layoutX="146.0" layoutY="26.0" preserveRatio="true">
+      <image>
+        <Image url="@../../../../pictures/appName.png" preserveRatio="false" smooth="false" />
+      </image>
+    </ImageView>
+    <TextField alignment="CENTER" editable="false" layoutX="146.0" layoutY="108.0" prefHeight="19.0" prefWidth="270.7222900390625" text="here will be print room number">
+      <effect>
+        <InnerShadow color="#00659f" />
+      </effect>
+    </TextField>
+    <Button blendMode="LIGHTEN" layoutX="14.0" layoutY="36.0" mnemonicParsing="false" prefHeight="92.0" prefWidth="92.0" text="START" textAlignment="CENTER" textFill="#fff500" textOverrun="CLIP">
+      <effect>
+        <DropShadow color="#fff500" spread="0.2222222222222222" />
+      </effect>
+      <font>
+        <Font size="20.0" />
+      </font>
+    </Button>
+  </children>
+  <stylesheets>
+    <URL value="@../../../../style/Connect.css" />
+  </stylesheets>
+</AnchorPane>
