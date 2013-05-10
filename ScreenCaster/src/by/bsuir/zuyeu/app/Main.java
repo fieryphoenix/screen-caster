@@ -44,12 +44,51 @@ public class Main extends Application {
 	    this.stage.setTitle(APP_TITLE);
 	    final ConnectController connect = (ConnectController) replaceSceneContent(CONNECT_VIEW_LOCATION);
 	    connect.setApp(this);
-
+	    this.getStage().setResizable(false);
 	    this.stage.show();
 	} catch (final Exception ex) {
 	    logger.error("start", ex);
 	}
 
+    }
+
+    // @Override
+    // public void start(Stage stage) {
+    // // Create and set the Scene.
+    // final Scene scene = new Scene(new Group(), 640, 480);
+    // stage.setScene(scene);
+    //
+    // // Name and display the Stage.
+    // stage.setTitle("Hello Media");
+    // stage.show();
+    //
+    // // Create the media source.
+    // final File file = new File("D:/output.mp4");
+    // final String path = file.toURI().toASCIIString();
+    // final Media media = new Media(path);
+    //
+    // // Create the player and set to play automatically.
+    // final MediaPlayer mediaPlayer = new MediaPlayer(media);
+    // mediaPlayer.setAutoPlay(true);
+    //
+    // // Create the view and add it to the Scene.
+    // final MediaView mediaView = new MediaView(mediaPlayer);
+    // // mediaView.autosize();
+    //
+    // final DoubleProperty width = mediaView.fitWidthProperty();
+    // final DoubleProperty height = mediaView.fitHeightProperty();
+    //
+    // width.bind(Bindings.selectDouble(mediaView.sceneProperty(), "width"));
+    // height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height"));
+    //
+    // mediaView.setPreserveRatio(false);
+    //
+    // ((Group) scene.getRoot()).getChildren().add(mediaView);
+    // }
+
+    public void exit() throws Exception {
+	logger.warn("exit() - start;");
+	this.getStage().close();
     }
 
     protected Initializable replaceSceneContent(String fxml) throws Exception {
@@ -88,4 +127,9 @@ public class Main extends Application {
 	stage.sizeToScene();
 	return (Initializable) loader.getController();
     }
+
+    public Stage getStage() {
+	return stage;
+    }
+
 }

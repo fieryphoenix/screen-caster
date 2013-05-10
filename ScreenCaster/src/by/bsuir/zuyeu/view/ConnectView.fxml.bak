@@ -7,12 +7,13 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="140.0" prefWidth="431.0" styleClass="background" xmlns:fx="http://javafx.com/fxml" fx:controller="by.bsuir.zuyeu.controller.ConnectController">
+<AnchorPane prefHeight="210.0" prefWidth="431.0" styleClass="background" xmlns:fx="http://javafx.com/fxml" fx:controller="by.bsuir.zuyeu.controller.ConnectController">
   <!-- TODO Add Nodes -->
   <children>
-    <MenuBar blendMode="SRC_ATOP" prefHeight="26.0" prefWidth="431.0">
+    <MenuBar blendMode="SRC_ATOP" prefHeight="26.0" prefWidth="432.0">
       <effect>
         <InnerShadow />
       </effect>
@@ -20,6 +21,8 @@
         <Menu mnemonicParsing="false" text="File">
           <items>
             <MenuItem mnemonicParsing="false" text="Close" />
+            <SeparatorMenuItem mnemonicParsing="false" />
+            <MenuItem mnemonicParsing="false" onAction="#closeApp" text="Exit" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Settings">
@@ -34,24 +37,88 @@
         </Menu>
       </menus>
     </MenuBar>
-    <ImageView fitHeight="60.50000762939453" fitWidth="270.7222468880218" layoutX="146.0" layoutY="26.0" preserveRatio="true">
-      <image>
-        <Image url="@../../../../pictures/appName.png" preserveRatio="false" smooth="false" />
-      </image>
-    </ImageView>
-    <TextField alignment="CENTER" editable="false" layoutX="146.0" layoutY="108.0" prefHeight="19.0" prefWidth="270.7222900390625" text="here will be print room number">
+    <Accordion prefHeight="184.0" prefWidth="434.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="26.0">
+      <expandedPane>
+        <TitledPane fx:id="x4" animated="false" text="Join">
+          <content>
+            <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="165.0" prefWidth="425.0" styleClass="background">
+              <children>
+                <TextField fx:id="joinRoomNumber" alignment="CENTER" layoutX="21.0" layoutY="95.0" prefHeight="19.0" prefWidth="270.7222900390625" promptText="enter room number here">
+                  <effect>
+                    <InnerShadow>
+                      <color>
+                        <Color blue="0.624" green="0.396" red="0.000" fx:id="x1" />
+                      </color>
+                    </InnerShadow>
+                  </effect>
+                </TextField>
+                <ImageView fitHeight="60.50000762939453" fitWidth="270.7222468880218" layoutX="14.0" layoutY="14.0" preserveRatio="true">
+                  <image>
+                    <Image url="@../../../../pictures/appName.png" preserveRatio="false" smooth="false" />
+                  </image>
+                </ImageView>
+                <Button fx:id="joinButton" blendMode="LIGHTEN" layoutX="311.0" layoutY="22.0" mnemonicParsing="false" onAction="#processJoin" prefHeight="92.0" prefWidth="92.0" text="JOIN" textAlignment="CENTER" textFill="#fff500" textOverrun="CLIP">
+                  <effect>
+                    <DropShadow color="#00e0ff" spread="0.2222222222222222" />
+                  </effect>
+                  <font>
+                    <Font size="20.0" fx:id="x2" />
+                  </font>
+                </Button>
+              </children>
+            </AnchorPane>
+          </content>
+          <font>
+            <Font name="System Bold" size="12.0" fx:id="x5" />
+          </font>
+        </TitledPane>
+      </expandedPane>
+      <panes>
+        <TitledPane fx:id="x6" animated="false" font="$x5" prefHeight="162.0" prefWidth="434.0" text="Share">
+          <content>
+            <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="165.0" prefWidth="425.0" styleClass="background">
+              <children>
+                <TextField id="shareRoom" fx:id="shareRoomNumber" alignment="CENTER" editable="false" layoutX="132.0" layoutY="95.0" prefHeight="19.0" prefWidth="270.7222900390625" promptText="here will be print room number">
+                  <effect>
+                    <InnerShadow color="$x1" />
+                  </effect>
+                </TextField>
+                <ImageView fitHeight="60.50000762939453" fitWidth="270.7222468880218" layoutX="132.0" layoutY="17.0" preserveRatio="true">
+                  <image>
+                    <Image url="@../../../../pictures/appName.png" preserveRatio="false" smooth="false" />
+                  </image>
+                </ImageView>
+                <Button fx:id="shareButton" blendMode="LIGHTEN" font="$x2" layoutX="14.0" layoutY="22.0" mnemonicParsing="false" onAction="#processShare" prefHeight="92.0" prefWidth="92.0" text="SHARE" textAlignment="CENTER" textFill="$x3" textOverrun="CLIP">
+                  <effect>
+                    <DropShadow spread="0.2222222222222222">
+                      <color>
+                        <Color blue="0.000" green="0.961" red="1.000" fx:id="x3" />
+                      </color>
+                    </DropShadow>
+                  </effect>
+                </Button>
+              </children>
+            </AnchorPane>
+          </content>
+        </TitledPane>
+        <fx:reference source="x4" />
+      </panes>
+    </Accordion>
+    <AnchorPane fx:id="waitPane" layoutX="-1.0" opacity="0.78" prefHeight="210.0" prefWidth="434.0" styleClass="background" visible="false">
+      <children>
+        <ProgressIndicator fx:id="waitIndicator" layoutX="108.0" layoutY="40.0" prefHeight="127.0" prefWidth="219.0" progress="0.0" />
+      </children>
       <effect>
-        <InnerShadow color="#00659f" />
+        <Lighting diffuseConstant="2.0">
+          <bumpInput>
+            <Shadow />
+          </bumpInput>
+          <light>
+            <javafx.scene.effect.Light.Distant color="GREY" />
+          </light>
+        </Lighting>
       </effect>
-    </TextField>
-    <Button blendMode="LIGHTEN" layoutX="14.0" layoutY="36.0" mnemonicParsing="false" prefHeight="92.0" prefWidth="92.0" text="START" textAlignment="CENTER" textFill="#fff500" textOverrun="CLIP">
-      <effect>
-        <DropShadow color="#0083cc" spread="0.2222222222222222" />
-      </effect>
-      <font>
-        <Font size="20.0" />
-      </font>
-    </Button>
+    </AnchorPane>
   </children>
   <stylesheets>
     <URL value="@../../../../style/Connect.css" />
