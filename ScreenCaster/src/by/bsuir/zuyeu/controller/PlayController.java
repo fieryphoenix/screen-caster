@@ -36,6 +36,7 @@ public class PlayController extends AnchorPane implements Initializable {
     private Main application;
     @FXML
     private Button stopButton;
+    private MediaPlayer mediaPlayer;
     private HideButtonUtil hideButtonUtil;
 
     @Override
@@ -44,7 +45,6 @@ public class PlayController extends AnchorPane implements Initializable {
 	logger.debug("button = {}", stopButton);
 	hideButtonUtil = new HideButtonUtil(stopButton);
 	Platform.runLater(hideButtonUtil.startHiding(5000));
-	addPlayer();
 	logger.info("initialize() - end;");
 
     }
@@ -52,12 +52,14 @@ public class PlayController extends AnchorPane implements Initializable {
     public void setApp(Main application) {
 	logger.info("setApp() - start;");
 	this.application = application;
+	addPlayer();
 	logger.info("setApp() - end;");
     }
 
     public void onStopPlay(ActionEvent event) {
 	logger.info("onStopPlay() - start: event = {}", event);
 	hideButtonUtil.stopHidding();
+	mediaPlayer.stop();
 	application.replaceToConnection();
 	logger.info("onStopPlay() - end;");
     }
@@ -83,7 +85,7 @@ public class PlayController extends AnchorPane implements Initializable {
 	final Media media = new Media(path);
 
 	// Create the player and set to play automatically.
-	final MediaPlayer mediaPlayer = new MediaPlayer(media);
+	mediaPlayer = new MediaPlayer(media);
 	mediaPlayer.setAutoPlay(true);
 
 	// Create the view and add it to the Scene.
@@ -97,8 +99,9 @@ public class PlayController extends AnchorPane implements Initializable {
 	height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height"));
 
 	mediaView.setPreserveRatio(false);
-	// ((AnchorPane)
-	// application.getStage().getScene().getRoot()).getChildren().add(mediaView);
+	logger.warn("test stage = {}", ((AnchorPane) application.getStage().getScene().getRoot()).getChildren());
+	((AnchorPane) application.getStage().getScene().getRoot()).getChildren().add(mediaView);
+	mediaView.toBack();
     }
 
 }

@@ -45,11 +45,11 @@ public final class HideButtonUtil {
 		    @Override
 		    public void run() {
 			logger.debug("run timer task - opacity decrease");
-			button.setOpacity(button.getOpacity() - OPACITY_DECREASE);
 			if ((button.getOpacity() < MIN_OPACITY) || isTimerStopped) {
-			    button.setOpacity(MIN_OPACITY);
-			    timer.cancel();
+			    this.cancel();
 			    logger.debug("cancel timer");
+			} else {
+			    button.setOpacity(button.getOpacity() - OPACITY_DECREASE);
 			}
 			logger.debug("button opacity = {}", button.getOpacity());
 		    }

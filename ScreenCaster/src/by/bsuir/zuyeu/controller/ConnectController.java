@@ -3,6 +3,8 @@
  */
 package by.bsuir.zuyeu.controller;
 
+import java.awt.AWTException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -21,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import by.bsuir.zuyeu.app.Constants;
 import by.bsuir.zuyeu.app.Main;
+import by.bsuir.zuyeu.util.ScreenRecorder;
 
 /**
  * @author Fieryphoenix
@@ -78,6 +81,7 @@ public class ConnectController extends AnchorPane implements Initializable {
 
     private boolean isSharingFired;
     private boolean isJoiningFired;
+    private ScreenRecorder recorder;
 
     public void setApp(Main application) {
 	logger.info("setApp() - start;");
@@ -90,6 +94,11 @@ public class ConnectController extends AnchorPane implements Initializable {
 	logger.info("initialize() - start: url = {}, rBundle = {}", new Object[] { url, rBundle });
 	isSharingFired = false;
 	isJoiningFired = false;
+	try {
+	    recorder = new ScreenRecorder();
+	} catch (final AWTException e) {
+	    logger.error("initialize()", e);
+	}
 	logger.info("initialize() - end;");
     }
 
@@ -99,10 +108,10 @@ public class ConnectController extends AnchorPane implements Initializable {
 	    startWaiting();
 	    if (!isSharingFired) {
 		shareButton.setText("STOP");
-		// TODO
+		startRecording();
 	    } else {
 		shareButton.setText("SHARE");
-		// TODO
+		recorder.stopRecord();
 	    }
 	    isSharingFired = !isSharingFired;
 	    stopWaiting();
@@ -150,6 +159,21 @@ public class ConnectController extends AnchorPane implements Initializable {
 	waitPane.setVisible(false);
 	waitIndicator.setProgress(1);
 	logger.trace("stopWaiting() - end;");
+    }
+
+    private void startRecording() {
+	final Thread t = new Thread() {
+	    @Override
+	    public void run() {
+		try {
+		    recorder.run();
+		} catch (InterruptedException | IOException e) {
+		    logger.error("run()", e);
+		}
+	    }
+	};
+	t.setDaemon(true);
+	t.start();
     }
 
 }
