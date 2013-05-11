@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import by.bsuir.zuyeu.controller.ConnectController;
+import by.bsuir.zuyeu.controller.PlayController;
 
 /**
  * @author Fieryphoenix
@@ -24,8 +25,6 @@ import by.bsuir.zuyeu.controller.ConnectController;
  */
 public class Main extends Application {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
-    private static final String CONNECT_VIEW_LOCATION = "../view/ConnectView.fxml";
-    private static final String APP_TITLE = "ScreenCaster v0.1";
 
     private Stage stage;
 
@@ -39,17 +38,16 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+	logger.info("start() - start: stage = {}", stage);
 	try {
 	    this.stage = stage;
-	    this.stage.setTitle(APP_TITLE);
-	    final ConnectController connect = (ConnectController) replaceSceneContent(CONNECT_VIEW_LOCATION);
-	    connect.setApp(this);
-	    this.getStage().setResizable(false);
+	    this.stage.setTitle(Constants.APP_TITLE);
+	    replaceToConnection();
 	    this.stage.show();
 	} catch (final Exception ex) {
 	    logger.error("start", ex);
 	}
-
+	logger.info("start() - end;");
     }
 
     // @Override
@@ -86,6 +84,30 @@ public class Main extends Application {
     // ((Group) scene.getRoot()).getChildren().add(mediaView);
     // }
 
+    public void replaceToPlayVideo(final String roomNumber) {
+	logger.info("gotoPlayVideo() - start;");
+	try {
+	    final PlayController playController = (PlayController) replaceSceneContent(Constants.PLAY_VIEW_LOCATION);
+	    playController.setApp(this);
+	    this.getStage().setResizable(true);
+	} catch (final Exception ex) {
+	    logger.error("start", ex);
+	}
+	logger.info("gotoPlayVideo() - end;");
+    }
+
+    public void replaceToConnection() {
+	logger.info("gotoConnection() - start;");
+	try {
+	    final ConnectController connectController = (ConnectController) replaceSceneContent(Constants.CONNECT_VIEW_LOCATION);
+	    connectController.setApp(this);
+	    this.getStage().setResizable(false);
+	} catch (final Exception ex) {
+	    logger.error("start", ex);
+	}
+	logger.info("gotoConnection() - end;");
+    }
+
     public void exit() throws Exception {
 	logger.warn("exit() - start;");
 	this.getStage().close();
@@ -107,23 +129,22 @@ public class Main extends Application {
 	if (!Double.isNaN(stageWidth)) {
 	    stageWidth -= (stage.getWidth() - stage.getScene().getWidth());
 	}
+	logger.debug("stageWidth = {}", stageWidth);
 	double stageHeight = stage.getHeight();
 	if (!Double.isNaN(stageHeight)) {
 	    stageHeight -= (stage.getHeight() - stage.getScene().getHeight());
 	}
-	// Scene scene = stage.getScene();
-	// if (scene == null) {
+	logger.debug("stageHeight = {}", stageHeight);
 	final Scene scene = new Scene(page);
 	if (!Double.isNaN(stageWidth)) {
-	    page.setPrefWidth(stageWidth);
+	    // page.setPrefWidth(stageWidth);
+	    stage.setWidth(page.getPrefWidth());
 	}
 	if (!Double.isNaN(stageHeight)) {
-	    page.setPrefHeight(stageHeight);
+	    // page.setPrefHeight(stageHeight);
+	    stage.setHeight(page.getPrefHeight());
 	}
 	stage.setScene(scene);
-	// } else {
-	// stage.getScene().setRoot(page);
-	// }
 	stage.sizeToScene();
 	return (Initializable) loader.getController();
     }

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import java.util.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0" styleClass="background" xmlns:fx="http://javafx.com/fxml" fx:controller="by.bsuir.zuyeu.controller.PlayController">
+  <children>
+    <Button fx:id="stopButton" blendMode="LIGHTEN" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#onStopPlay" onMouseEntered="#onMouseAboveButton" onMouseExited="#onMouseOutOfButton" prefHeight="92.0" prefWidth="92.0" text="STOP" textAlignment="CENTER" textFill="#fff500" textOverrun="CLIP">
+      <effect>
+        <DropShadow color="#00e0ff" spread="0.2222222222222222" />
+      </effect>
+      <font>
+        <Font size="20.0" />
+      </font>
+    </Button>
+  </children>
+  <stylesheets>
+    <URL value="@../../../../style/Play.css" />
+  </stylesheets>
+</AnchorPane>

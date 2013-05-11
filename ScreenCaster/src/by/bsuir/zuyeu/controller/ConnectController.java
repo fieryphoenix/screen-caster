@@ -6,6 +6,7 @@ package by.bsuir.zuyeu.controller;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -14,8 +15,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +28,38 @@ import by.bsuir.zuyeu.app.Main;
  */
 public class ConnectController extends AnchorPane implements Initializable {
     private static final Logger logger = LoggerFactory.getLogger(ConnectController.class);
+
+    protected class JoinTask extends Task<Void> {
+
+	@Override
+	protected Void call() throws Exception {
+	    logger.trace("call() - start;");
+	    final String roomNumber = joinRoomNumber.getText().trim().toLowerCase();
+	    application.replaceToPlayVideo(roomNumber);
+	    stopWaiting();
+	    logger.trace("call() - end;");
+	    return null;
+	}
+
+    }
+
+    protected class DisconnectTask extends Task<Void> {
+
+	@Override
+	protected Void call() throws Exception {
+	    logger.trace("call() - start;");
+	    application.replaceToConnection();
+	    try {
+		Thread.sleep(Constants.GLOBAL_DELAY_MILLIS);
+	    } catch (final InterruptedException e) {
+		logger.error("call()", e);
+	    }
+	    stopWaiting();
+	    logger.trace("call() - end;");
+	    return null;
+	}
+
+    }
 
     private Main application;
 
@@ -68,17 +99,16 @@ public class ConnectController extends AnchorPane implements Initializable {
 	    startWaiting();
 	    if (!isSharingFired) {
 		shareButton.setText("STOP");
-
+		// TODO
 	    } else {
 		shareButton.setText("SHARE");
-
+		// TODO
 	    }
 	    isSharingFired = !isSharingFired;
 	    stopWaiting();
 	} else {
 	    // TODO: show error
 	}
-	// showPopupError("test");
 	logger.info("processShare() - end;");
     }
 
@@ -89,43 +119,13 @@ public class ConnectController extends AnchorPane implements Initializable {
 	    Task<Void> task = null;
 	    if (!isJoiningFired) {
 		joinButton.setText("STOP");
-		task = new Task<Void>() {
-
-		    @Override
-		    protected Void call() throws Exception {
-			logger.trace("call() - start;");
-			stopWaiting();
-			// TODO: add start player
-			final Media media = new Media("d:/output.mp4");
-			final MediaPlayer player = new MediaPlayer(media);
-			player.play();
-
-			logger.trace("call() - end;");
-			return null;
-		    }
-		};
-
+		task = new JoinTask();
 	    } else {
 		joinButton.setText("JOIN");
-		task = new Task<Void>() {
-
-		    @Override
-		    protected Void call() throws Exception {
-			logger.trace("call() - start;");
-			try {
-			    Thread.sleep(Constants.GLOBAL_DELAY_MILLIS);
-			} catch (final InterruptedException e) {
-			    logger.error("call()", e);
-			}
-			stopWaiting();
-			logger.trace("call() - end;");
-			return null;
-		    }
-		};
-
+		task = new DisconnectTask();
 	    }
 	    isJoiningFired = !isJoiningFired;
-	    startTask(task);
+	    Platform.runLater(task);
 	} else {
 	    // TOFO: show error
 	}
@@ -138,32 +138,18 @@ public class ConnectController extends AnchorPane implements Initializable {
 	logger.info("closeApp() - end;");
     }
 
-    private void startTask(final Task<Void> task) {
-	logger.trace("startTask() - start: task = {}", task);
-	final Thread th = new Thread(task);
-	th.setDaemon(true);
-	th.start();
-	logger.trace("startTask() - end;");
-    }
-
     private void startWaiting() {
+	logger.trace("startWaiting() - start;");
 	waitPane.setVisible(true);
 	waitIndicator.setProgress(-1);
+	logger.trace("startWaiting() - end;");
     }
 
     private void stopWaiting() {
+	logger.trace("stopWaiting() - start;");
 	waitPane.setVisible(false);
 	waitIndicator.setProgress(1);
+	logger.trace("stopWaiting() - end;");
     }
-    //
-    // private void showPopupError(final String message) {
-    // final Popup popup = new Popup();
-    // // TODO: define normal position
-    // popup.setX(300);
-    // popup.setY(200);
-    // popup.getContent().addAll(new Circle(25, 25, 50, Color.AQUAMARINE), new
-    // Text(message));
-    // popup.show(application.getStage());
-    // }
 
 }

@@ -10,17 +10,16 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="210.0" prefWidth="431.0" styleClass="background" xmlns:fx="http://javafx.com/fxml" fx:controller="by.bsuir.zuyeu.controller.ConnectController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="220.0" prefWidth="450.0" styleClass="background" xmlns:fx="http://javafx.com/fxml" fx:controller="by.bsuir.zuyeu.controller.ConnectController">
   <!-- TODO Add Nodes -->
   <children>
-    <MenuBar blendMode="SRC_ATOP" prefHeight="26.0" prefWidth="432.0">
+    <MenuBar blendMode="SRC_ATOP" minHeight="-Infinity" minWidth="-Infinity" prefHeight="26.0" prefWidth="450.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
       <effect>
         <InnerShadow />
       </effect>
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
-            <MenuItem mnemonicParsing="false" text="Close" />
             <SeparatorMenuItem mnemonicParsing="false" />
             <MenuItem mnemonicParsing="false" onAction="#closeApp" text="Exit" />
           </items>
@@ -37,7 +36,7 @@
         </Menu>
       </menus>
     </MenuBar>
-    <Accordion prefHeight="184.0" prefWidth="434.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-2.0" AnchorPane.topAnchor="26.0">
+    <Accordion prefHeight="195.00009999999747" prefWidth="450.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
       <expandedPane>
         <TitledPane fx:id="x4" animated="false" text="Join">
           <content>
@@ -57,7 +56,7 @@
                     <Image url="@../../../../pictures/appName.png" preserveRatio="false" smooth="false" />
                   </image>
                 </ImageView>
-                <Button fx:id="joinButton" blendMode="LIGHTEN" layoutX="311.0" layoutY="22.0" mnemonicParsing="false" onAction="#processJoin" prefHeight="92.0" prefWidth="92.0" text="JOIN" textAlignment="CENTER" textFill="#fff500" textOverrun="CLIP">
+                <Button fx:id="joinButton" blendMode="LIGHTEN" layoutX="311.0" layoutY="22.0" mnemonicParsing="false" onAction="#processJoin" onMouseExited="#testExit" prefHeight="92.0" prefWidth="92.0" text="JOIN" textAlignment="CENTER" textFill="#fff500" textOverrun="CLIP">
                   <effect>
                     <DropShadow color="#00e0ff" spread="0.2222222222222222" />
                   </effect>
