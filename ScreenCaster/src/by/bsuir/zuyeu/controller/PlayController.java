@@ -3,40 +3,79 @@
  */
 package by.bsuir.zuyeu.controller;
 
-import java.io.File;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.BlockingQueue;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-import javafx.scene.media.MediaView;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import by.bsuir.zuyeu.app.Main;
+import by.bsuir.zuyeu.service.WebStreamer;
 import by.bsuir.zuyeu.view.util.HideButtonUtil;
 
 /**
  * @author Fieryphoenix
  * 
  */
-public class PlayController extends AnchorPane implements Initializable {
+public class PlayController extends AnchorController {
     private static final Logger logger = LoggerFactory.getLogger(PlayController.class);
+
+    class TimerUpdater {
+	private final BlockingQueue<BufferedImage> imageSource;
+	private boolean timerGo;
+
+	public TimerUpdater(final BlockingQueue<BufferedImage> imageSource) {
+	    this.imageSource = imageSource;
+	}
+
+	public void startTimer() {
+	    timerGo = true;
+	    final Timer timer = new Timer(true);
+	    timer.schedule(new TimerTask() {
+
+		@Override
+		public void run() {
+		    if (!timerGo) {
+			this.cancel();
+		    }
+		    if (imageSource.size() > 0) {
+			final BufferedImage screenImage = imageSource.poll();
+			updateImage(screenImage);
+		    }
+
+		}
+	    }, 0, 100);
+
+	}
+
+	public void stopTimer() {
+	    timerGo = false;
+	}
+    }
 
     private Main application;
     @FXML
     private Button stopButton;
-    private MediaPlayer mediaPlayer;
+    @FXML
+    private ImageView backgroudImageView;
+    // private MediaPlayer mediaPlayer;
+    private TimerUpdater updater;
     private HideButtonUtil hideButtonUtil;
 
     @Override
@@ -44,7 +83,8 @@ public class PlayController extends AnchorPane implements Initializable {
 	logger.info("initialize() - start: url = {}, rBundle = {}", new Object[] { url, rBundle });
 	logger.debug("button = {}", stopButton);
 	hideButtonUtil = new HideButtonUtil(stopButton);
-	Platform.runLater(hideButtonUtil.startHiding(5000));
+	final long hideDelay = 5000;
+	Platform.runLater(hideButtonUtil.startHiding(hideDelay));
 	logger.info("initialize() - end;");
 
     }
@@ -52,15 +92,16 @@ public class PlayController extends AnchorPane implements Initializable {
     public void setApp(Main application) {
 	logger.info("setApp() - start;");
 	this.application = application;
-	addPlayer();
+	// TODO: set file here
+	// addPlayer(filePath);
 	logger.info("setApp() - end;");
     }
 
     public void onStopPlay(ActionEvent event) {
 	logger.info("onStopPlay() - start: event = {}", event);
 	hideButtonUtil.stopHidding();
-	mediaPlayer.stop();
-	application.replaceToConnection();
+	updater.stopTimer();
+	application.gotoConnection();
 	logger.info("onStopPlay() - end;");
     }
 
@@ -72,36 +113,66 @@ public class PlayController extends AnchorPane implements Initializable {
 
     public void onMouseOutOfButton(MouseEvent event) {
 	logger.info("onMouseOutOfButton() - start: event = {}", event);
-	Platform.runLater(hideButtonUtil.startHiding(1000));
+	final long hideDelay = 1000;
+	Platform.runLater(hideButtonUtil.startHiding(hideDelay));
 	logger.info("onMouseOutOfButton() - end;");
     }
 
-    private void addPlayer() {
+    protected void updateImage(final BufferedImage bgrImage) {
+	logger.trace("updateImage() - start: bgrImage = {}", bgrImage);
+	final DoubleProperty width = backgroudImageView.fitWidthProperty();
+	final DoubleProperty height = backgroudImageView.fitHeightProperty();
 
-	// Create the media source.
-	// TODO: setup stream here
-	final File file = new File("D:/output.mp4");
-	final String path = file.toURI().toASCIIString();
-	final Media media = new Media(path);
+	final Image image = SwingFXUtils.toFXImage(bgrImage, null);
+	backgroudImageView.setImage(image);
+	// backgroudImageView.toFront();
 
-	// Create the player and set to play automatically.
-	mediaPlayer = new MediaPlayer(media);
-	mediaPlayer.setAutoPlay(true);
-
-	// Create the view and add it to the Scene.
-	final MediaView mediaView = new MediaView(mediaPlayer);
-	// mediaView.autosize();
-
-	final DoubleProperty width = mediaView.fitWidthProperty();
-	final DoubleProperty height = mediaView.fitHeightProperty();
-
-	width.bind(Bindings.selectDouble(mediaView.sceneProperty(), "width"));
-	height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height"));
-
-	mediaView.setPreserveRatio(false);
-	logger.warn("test stage = {}", ((AnchorPane) application.getStage().getScene().getRoot()).getChildren());
-	((AnchorPane) application.getStage().getScene().getRoot()).getChildren().add(mediaView);
-	mediaView.toBack();
+	width.bind(Bindings.selectDouble(backgroudImageView.sceneProperty(), "width"));
+	height.bind(Bindings.selectDouble(backgroudImageView.sceneProperty(), "height"));
+	logger.trace("updateImage() - end;");
     }
+
+    public void startImageShow(final String roomNumber) {
+	logger.info("startImageShow() - start: roomNumber = {}", roomNumber);
+	// Platform.runLater(new PlayTask());
+	try {
+	    final WebStreamer ws = new WebStreamer();
+	    final BlockingQueue<BufferedImage> imageSource = ws.down();
+	    updater = new TimerUpdater(imageSource);
+	    updater.startTimer();
+	} catch (final IOException e) {
+	    logger.error("startImageShow()", e);
+	}
+	logger.info("startImageShow() - end;");
+    }
+
+    // public void addPlayer(final String source) {
+    // logger.trace("addPlayer() - start: source = {}", source);
+    // // Create the media source.
+    // // TODO: setup stream here
+    // final Media media = new Media(source);
+    //
+    // // Create the player and set to play automatically.
+    // mediaPlayer = new MediaPlayer(media);
+    // mediaPlayer.setAutoPlay(true);
+    //
+    // // Create the view and add it to the Scene.
+    // final MediaView mediaView = new MediaView(mediaPlayer);
+    // // mediaView.autosize();
+    //
+    // final DoubleProperty width = mediaView.fitWidthProperty();
+    // final DoubleProperty height = mediaView.fitHeightProperty();
+    //
+    // width.bind(Bindings.selectDouble(mediaView.sceneProperty(), "width"));
+    // height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height"));
+    //
+    // mediaView.setPreserveRatio(false);
+    // logger.warn("test stage = {}", ((AnchorPane)
+    // application.getStage().getScene().getRoot()).getChildren());
+    // ((AnchorPane)
+    // application.getStage().getScene().getRoot()).getChildren().add(mediaView);
+    // mediaView.toBack();
+    // logger.trace("addPlayer() - end;");
+    // }
 
 }

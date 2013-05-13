@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import by.bsuir.zuyeu.controller.ConnectController;
+import by.bsuir.zuyeu.controller.MainController;
 import by.bsuir.zuyeu.controller.PlayController;
 
 /**
@@ -27,6 +28,7 @@ public class Main extends Application {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     private Stage stage;
+    private MainController mainController;
 
     /**
      * @param args
@@ -42,7 +44,7 @@ public class Main extends Application {
 	try {
 	    this.stage = stage;
 	    this.stage.setTitle(Constants.APP_TITLE);
-	    replaceToConnection();
+	    gotoConnection();
 	    this.stage.show();
 	} catch (final Exception ex) {
 	    logger.error("start", ex);
@@ -50,62 +52,31 @@ public class Main extends Application {
 	logger.info("start() - end;");
     }
 
-    // @Override
-    // public void start(Stage stage) {
-    // // Create and set the Scene.
-    // final Scene scene = new Scene(new Group(), 640, 480);
-    // stage.setScene(scene);
-    //
-    // // Name and display the Stage.
-    // stage.setTitle("Hello Media");
-    // stage.show();
-    //
-    // // Create the media source.
-    // final File file = new File("D:/output.mp4");
-    // final String path = file.toURI().toASCIIString();
-    // final Media media = new Media(path);
-    //
-    // // Create the player and set to play automatically.
-    // final MediaPlayer mediaPlayer = new MediaPlayer(media);
-    // mediaPlayer.setAutoPlay(true);
-    //
-    // // Create the view and add it to the Scene.
-    // final MediaView mediaView = new MediaView(mediaPlayer);
-    // // mediaView.autosize();
-    //
-    // final DoubleProperty width = mediaView.fitWidthProperty();
-    // final DoubleProperty height = mediaView.fitHeightProperty();
-    //
-    // width.bind(Bindings.selectDouble(mediaView.sceneProperty(), "width"));
-    // height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height"));
-    //
-    // mediaView.setPreserveRatio(false);
-    //
-    // ((Group) scene.getRoot()).getChildren().add(mediaView);
-    // }
-
-    public void replaceToPlayVideo(final String roomNumber) {
-	logger.info("gotoPlayVideo() - start;");
+    public void gotoPlayVideo(final String roomNumber) {
+	logger.info("replaceToPlayVideo() - start;");
 	try {
 	    final PlayController playController = (PlayController) replaceSceneContent(Constants.PLAY_VIEW_LOCATION);
 	    playController.setApp(this);
+	    playController.startImageShow(roomNumber);
 	    this.getStage().setResizable(true);
+
 	} catch (final Exception ex) {
 	    logger.error("start", ex);
 	}
-	logger.info("gotoPlayVideo() - end;");
+	logger.info("replaceToPlayVideo() - end;");
     }
 
-    public void replaceToConnection() {
-	logger.info("gotoConnection() - start;");
+    public void gotoConnection() {
+	logger.info("replaceToConnection() - start;");
 	try {
+
 	    final ConnectController connectController = (ConnectController) replaceSceneContent(Constants.CONNECT_VIEW_LOCATION);
 	    connectController.setApp(this);
 	    this.getStage().setResizable(false);
 	} catch (final Exception ex) {
 	    logger.error("start", ex);
 	}
-	logger.info("gotoConnection() - end;");
+	logger.info("replaceToConnection() - end;");
     }
 
     public void exit() throws Exception {
@@ -113,7 +84,7 @@ public class Main extends Application {
 	this.getStage().close();
     }
 
-    protected Initializable replaceSceneContent(String fxml) throws Exception {
+    protected Initializable replaceSceneContent(final String fxml) throws Exception {
 	final FXMLLoader loader = new FXMLLoader();
 	final InputStream in = Main.class.getResourceAsStream(fxml);
 	loader.setBuilderFactory(new JavaFXBuilderFactory());
@@ -137,11 +108,9 @@ public class Main extends Application {
 	logger.debug("stageHeight = {}", stageHeight);
 	final Scene scene = new Scene(page);
 	if (!Double.isNaN(stageWidth)) {
-	    // page.setPrefWidth(stageWidth);
 	    stage.setWidth(page.getPrefWidth());
 	}
 	if (!Double.isNaN(stageHeight)) {
-	    // page.setPrefHeight(stageHeight);
 	    stage.setHeight(page.getPrefHeight());
 	}
 	stage.setScene(scene);

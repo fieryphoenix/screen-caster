@@ -38,11 +38,11 @@
     </MenuBar>
     <Accordion prefHeight="195.00009999999747" prefWidth="450.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
       <expandedPane>
-        <TitledPane fx:id="x4" animated="false" text="Join">
+        <TitledPane fx:id="x6" animated="false" prefHeight="162.0" prefWidth="434.0" text="Share">
           <content>
             <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="165.0" prefWidth="425.0" styleClass="background">
               <children>
-                <TextField fx:id="joinRoomNumber" alignment="CENTER" layoutX="21.0" layoutY="95.0" prefHeight="19.0" prefWidth="270.7222900390625" promptText="enter room number here">
+                <TextField id="shareRoom" fx:id="shareRoomNumber" alignment="CENTER" editable="false" layoutX="132.0" layoutY="95.0" prefHeight="19.0" prefWidth="270.7222900390625" promptText="here will be print room number">
                   <effect>
                     <InnerShadow>
                       <color>
@@ -51,14 +51,18 @@
                     </InnerShadow>
                   </effect>
                 </TextField>
-                <ImageView fitHeight="60.50000762939453" fitWidth="270.7222468880218" layoutX="14.0" layoutY="14.0" preserveRatio="true">
+                <ImageView fitHeight="60.50000762939453" fitWidth="270.7222468880218" layoutX="132.0" layoutY="17.0" preserveRatio="true">
                   <image>
                     <Image url="@../../../../pictures/appName.png" preserveRatio="false" smooth="false" />
                   </image>
                 </ImageView>
-                <Button fx:id="joinButton" blendMode="LIGHTEN" layoutX="311.0" layoutY="22.0" mnemonicParsing="false" onAction="#processJoin" prefHeight="92.0" prefWidth="92.0" text="JOIN" textAlignment="CENTER" textFill="#fff500" textOverrun="CLIP">
+                <Button fx:id="shareButton" blendMode="LIGHTEN" layoutX="14.0" layoutY="22.0" mnemonicParsing="false" onAction="#processShare" prefHeight="92.0" prefWidth="92.0" text="SHARE" textAlignment="CENTER" textFill="$x3" textOverrun="CLIP">
                   <effect>
-                    <DropShadow color="#00e0ff" spread="0.2222222222222222" />
+                    <DropShadow spread="0.2222222222222222">
+                      <color>
+                        <Color blue="0.000" green="0.961" red="1.000" fx:id="x3" />
+                      </color>
+                    </DropShadow>
                   </effect>
                   <font>
                     <Font size="20.0" fx:id="x2" />
@@ -73,37 +77,33 @@
         </TitledPane>
       </expandedPane>
       <panes>
-        <TitledPane fx:id="x6" animated="false" font="$x5" prefHeight="162.0" prefWidth="434.0" text="Share">
+        <fx:reference source="x6" />
+        <TitledPane fx:id="x4" animated="false" font="$x5" text="Join">
           <content>
             <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="165.0" prefWidth="425.0" styleClass="background">
               <children>
-                <TextField id="shareRoom" fx:id="shareRoomNumber" alignment="CENTER" editable="false" layoutX="132.0" layoutY="95.0" prefHeight="19.0" prefWidth="270.7222900390625" promptText="here will be print room number">
+                <TextField fx:id="joinRoomNumber" alignment="CENTER" layoutX="21.0" layoutY="95.0" prefHeight="19.0" prefWidth="270.7222900390625" promptText="enter room number here">
                   <effect>
                     <InnerShadow color="$x1" />
                   </effect>
                 </TextField>
-                <ImageView fitHeight="60.50000762939453" fitWidth="270.7222468880218" layoutX="132.0" layoutY="17.0" preserveRatio="true">
+                <ImageView fitHeight="60.50000762939453" fitWidth="270.7222468880218" layoutX="14.0" layoutY="14.0" preserveRatio="true">
                   <image>
                     <Image url="@../../../../pictures/appName.png" preserveRatio="false" smooth="false" />
                   </image>
                 </ImageView>
-                <Button fx:id="shareButton" blendMode="LIGHTEN" font="$x2" layoutX="14.0" layoutY="22.0" mnemonicParsing="false" onAction="#processShare" prefHeight="92.0" prefWidth="92.0" text="SHARE" textAlignment="CENTER" textFill="$x3" textOverrun="CLIP">
+                <Button fx:id="joinButton" blendMode="LIGHTEN" font="$x2" layoutX="311.0" layoutY="22.0" mnemonicParsing="false" onAction="#processJoin" prefHeight="92.0" prefWidth="92.0" text="JOIN" textAlignment="CENTER" textFill="#fff500" textOverrun="CLIP">
                   <effect>
-                    <DropShadow spread="0.2222222222222222">
-                      <color>
-                        <Color blue="0.000" green="0.961" red="1.000" fx:id="x3" />
-                      </color>
-                    </DropShadow>
+                    <DropShadow color="#00e0ff" spread="0.2222222222222222" />
                   </effect>
                 </Button>
               </children>
             </AnchorPane>
           </content>
         </TitledPane>
-        <fx:reference source="x4" />
       </panes>
     </Accordion>
-    <AnchorPane fx:id="waitPane" layoutX="-1.0" opacity="0.78" prefHeight="210.0" prefWidth="434.0" styleClass="background" visible="false">
+    <AnchorPane fx:id="waitPane" layoutX="-1.0" layoutY="0.0" opacity="0.78" prefHeight="220.0" prefWidth="451.0" styleClass="background" visible="false">
       <children>
         <ProgressIndicator fx:id="waitIndicator" layoutX="108.0" layoutY="40.0" prefHeight="127.0" prefWidth="219.0" progress="0.0" />
       </children>

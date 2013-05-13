@@ -4,15 +4,16 @@
 package by.bsuir.zuyeu.controller;
 
 import java.awt.AWTException;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.BlockingQueue;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
@@ -23,13 +24,14 @@ import org.slf4j.LoggerFactory;
 
 import by.bsuir.zuyeu.app.Constants;
 import by.bsuir.zuyeu.app.Main;
-import by.bsuir.zuyeu.util.ScreenRecorder;
+import by.bsuir.zuyeu.service.WebStreamer;
+import by.bsuir.zuyeu.util.ScreenShoter;
 
 /**
  * @author Fieryphoenix
  * 
  */
-public class ConnectController extends AnchorPane implements Initializable {
+public class ConnectController extends AnchorController {
     private static final Logger logger = LoggerFactory.getLogger(ConnectController.class);
 
     protected class JoinTask extends Task<Void> {
@@ -38,7 +40,8 @@ public class ConnectController extends AnchorPane implements Initializable {
 	protected Void call() throws Exception {
 	    logger.trace("call() - start;");
 	    final String roomNumber = joinRoomNumber.getText().trim().toLowerCase();
-	    application.replaceToPlayVideo(roomNumber);
+	    // TODO: call service to know address and join to cast
+	    application.gotoPlayVideo(roomNumber);
 	    stopWaiting();
 	    logger.trace("call() - end;");
 	    return null;
@@ -51,13 +54,31 @@ public class ConnectController extends AnchorPane implements Initializable {
 	@Override
 	protected Void call() throws Exception {
 	    logger.trace("call() - start;");
-	    application.replaceToConnection();
+	    streamer.setDownloadEnable(false);
+	    application.gotoConnection();
 	    try {
 		Thread.sleep(Constants.GLOBAL_DELAY_MILLIS);
 	    } catch (final InterruptedException e) {
 		logger.error("call()", e);
 	    }
 	    stopWaiting();
+	    logger.trace("call() - end;");
+	    return null;
+	}
+
+    }
+
+    protected class ShareTask extends Task<Void> {
+
+	@Override
+	protected Void call() throws Exception {
+	    logger.trace("call() - start;");
+	    try {
+		final BlockingQueue<BufferedImage> imageStream = shoter.startFrameShoting();
+		streamer.up(imageStream);
+	    } catch (final IOException e) {
+		logger.error("processShare()", e);
+	    }
 	    logger.trace("call() - end;");
 	    return null;
 	}
@@ -81,7 +102,9 @@ public class ConnectController extends AnchorPane implements Initializable {
 
     private boolean isSharingFired;
     private boolean isJoiningFired;
-    private ScreenRecorder recorder;
+    // private ScreenRecorder recorder;
+    private ScreenShoter shoter;
+    private WebStreamer streamer;
 
     public void setApp(Main application) {
 	logger.info("setApp() - start;");
@@ -95,10 +118,12 @@ public class ConnectController extends AnchorPane implements Initializable {
 	isSharingFired = false;
 	isJoiningFired = false;
 	try {
-	    recorder = new ScreenRecorder();
+	    // recorder = new ScreenRecorder();
+	    shoter = new ScreenShoter();
 	} catch (final AWTException e) {
 	    logger.error("initialize()", e);
 	}
+	streamer = new WebStreamer();
 	logger.info("initialize() - end;");
     }
 
@@ -108,10 +133,12 @@ public class ConnectController extends AnchorPane implements Initializable {
 	    startWaiting();
 	    if (!isSharingFired) {
 		shareButton.setText("STOP");
-		startRecording();
+		Platform.runLater(new ShareTask());
 	    } else {
 		shareButton.setText("SHARE");
-		recorder.stopRecord();
+		// recorder.stopRecord();
+		shoter.stopStreaming();
+		streamer.setUploadEnable(false);
 	    }
 	    isSharingFired = !isSharingFired;
 	    stopWaiting();
@@ -159,21 +186,6 @@ public class ConnectController extends AnchorPane implements Initializable {
 	waitPane.setVisible(false);
 	waitIndicator.setProgress(1);
 	logger.trace("stopWaiting() - end;");
-    }
-
-    private void startRecording() {
-	final Thread t = new Thread() {
-	    @Override
-	    public void run() {
-		try {
-		    recorder.run();
-		} catch (InterruptedException | IOException e) {
-		    logger.error("run()", e);
-		}
-	    }
-	};
-	t.setDaemon(true);
-	t.start();
     }
 
 }
