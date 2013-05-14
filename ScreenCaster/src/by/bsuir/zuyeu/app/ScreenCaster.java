@@ -17,25 +17,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import by.bsuir.zuyeu.controller.ConnectController;
-import by.bsuir.zuyeu.controller.MainController;
 import by.bsuir.zuyeu.controller.PlayController;
 
 /**
  * @author Fieryphoenix
  * 
  */
-public class Main extends Application {
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+public class ScreenCaster extends Application {
+    private static final Logger logger = LoggerFactory.getLogger(ScreenCaster.class);
 
     private Stage stage;
-    private MainController mainController;
+
+    // private MainController mainController;
 
     /**
      * @param args
      *            the command line arguments
      */
     public static void main(String[] args) {
-	Application.launch(Main.class, (java.lang.String[]) null);
+	Application.launch(ScreenCaster.class, (java.lang.String[]) null);
     }
 
     @Override
@@ -86,9 +86,9 @@ public class Main extends Application {
 
     protected Initializable replaceSceneContent(final String fxml) throws Exception {
 	final FXMLLoader loader = new FXMLLoader();
-	final InputStream in = Main.class.getResourceAsStream(fxml);
+	final InputStream in = ScreenCaster.class.getResourceAsStream(fxml);
 	loader.setBuilderFactory(new JavaFXBuilderFactory());
-	loader.setLocation(Main.class.getResource(fxml));
+	loader.setLocation(ScreenCaster.class.getResource(fxml));
 	AnchorPane page;
 	try {
 	    page = (AnchorPane) loader.load(in);

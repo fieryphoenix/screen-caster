@@ -18,12 +18,17 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Text;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import by.bsuir.zuyeu.admin.api.CommandType;
 import by.bsuir.zuyeu.app.Constants;
-import by.bsuir.zuyeu.app.Main;
+import by.bsuir.zuyeu.app.ScreenCaster;
+import by.bsuir.zuyeu.exeption.ErrorMessages;
+import by.bsuir.zuyeu.model.UIChainTask;
+import by.bsuir.zuyeu.service.ConnectManagerClient;
 import by.bsuir.zuyeu.service.WebStreamer;
 import by.bsuir.zuyeu.util.ScreenShoter;
 
@@ -37,12 +42,42 @@ public class ConnectController extends AnchorController {
     protected class JoinTask extends Task<Void> {
 
 	@Override
-	protected Void call() throws Exception {
+	protected Void call() {
 	    logger.trace("call() - start;");
 	    final String roomNumber = joinRoomNumber.getText().trim().toLowerCase();
 	    // TODO: call service to know address and join to cast
 	    application.gotoPlayVideo(roomNumber);
-	    stopWaiting();
+	    isWaitJobDone = true;
+	    logger.trace("call() - end;");
+	    return null;
+	}
+
+    }
+
+    protected class OpenSessionTask extends UIChainTask<Void> {
+
+	public OpenSessionTask(Task<Void> task) {
+	    super(task);
+	}
+
+	@Override
+	protected Void call() {
+	    logger.trace("call() - start;");
+	    try {
+		ConnectManagerClient.getInstance().dialogToServer(CommandType.REGISTER_NEW_ROOM);
+		shareButton.setText("STOP");
+		try {
+		    final BlockingQueue<BufferedImage> imageStream = shoter.startFrameShoting();
+		    streamer.up(imageStream);
+		    isSharingFired = true;
+		} catch (final IOException | InterruptedException e) {
+		    registerError("call", ErrorMessages.SERVER_UNAVAILABLE, e);
+		}
+	    } catch (final IOException e) {
+		registerError("call", ErrorMessages.SERVER_UNAVAILABLE, e);
+	    } finally {
+		isWaitJobDone = true;
+	    }
 	    logger.trace("call() - end;");
 	    return null;
 	}
@@ -52,7 +87,7 @@ public class ConnectController extends AnchorController {
     protected class DisconnectTask extends Task<Void> {
 
 	@Override
-	protected Void call() throws Exception {
+	protected Void call() {
 	    logger.trace("call() - start;");
 	    streamer.setDownloadEnable(false);
 	    application.gotoConnection();
@@ -61,23 +96,21 @@ public class ConnectController extends AnchorController {
 	    } catch (final InterruptedException e) {
 		logger.error("call()", e);
 	    }
-	    stopWaiting();
+	    isWaitJobDone = true;
 	    logger.trace("call() - end;");
 	    return null;
 	}
 
     }
 
-    protected class ShareTask extends Task<Void> {
+    protected class CheckWaitTask extends Task<Void> {
 
 	@Override
 	protected Void call() throws Exception {
 	    logger.trace("call() - start;");
-	    try {
-		final BlockingQueue<BufferedImage> imageStream = shoter.startFrameShoting();
-		streamer.up(imageStream);
-	    } catch (final IOException e) {
-		logger.error("processShare()", e);
+	    if (isWaitJobDone) {
+		logger.debug("wait job is done");
+		stopWaiting();
 	    }
 	    logger.trace("call() - end;");
 	    return null;
@@ -85,7 +118,21 @@ public class ConnectController extends AnchorController {
 
     }
 
-    private Main application;
+    protected class TEstTask extends UIChainTask<Void> {
+	public TEstTask(Task<Void> task) {
+	    super(task);
+	}
+
+	@Override
+	protected Void call() throws InterruptedException {
+	    Thread.sleep(5000);
+	    isWaitJobDone = true;
+	    return null;
+	}
+
+    }
+
+    private ScreenCaster application;
 
     @FXML
     private Button shareButton;
@@ -99,14 +146,17 @@ public class ConnectController extends AnchorController {
     private AnchorPane waitPane;
     @FXML
     private ProgressIndicator waitIndicator;
+    @FXML
+    private Text errorMessage;
 
     private boolean isSharingFired;
     private boolean isJoiningFired;
+    private boolean isWaitJobDone;
     // private ScreenRecorder recorder;
     private ScreenShoter shoter;
     private WebStreamer streamer;
 
-    public void setApp(Main application) {
+    public void setApp(ScreenCaster application) {
 	logger.info("setApp() - start;");
 	this.application = application;
 	logger.info("setApp() - end;");
@@ -117,31 +167,32 @@ public class ConnectController extends AnchorController {
 	logger.info("initialize() - start: url = {}, rBundle = {}", new Object[] { url, rBundle });
 	isSharingFired = false;
 	isJoiningFired = false;
+	clearErrors();
 	try {
 	    // recorder = new ScreenRecorder();
 	    shoter = new ScreenShoter();
 	} catch (final AWTException e) {
-	    logger.error("initialize()", e);
+	    registerError("initialize()", ErrorMessages.APP_INIT_ERROR, e);
 	}
 	streamer = new WebStreamer();
 	logger.info("initialize() - end;");
     }
 
-    public void processShare(ActionEvent event) throws InterruptedException {
+    public void processShare(ActionEvent event) {
 	logger.info("processShare() - start: event = {}", event);
+	clearErrors();
 	if (!isJoiningFired) {
-	    startWaiting();
 	    if (!isSharingFired) {
-		shareButton.setText("STOP");
-		Platform.runLater(new ShareTask());
+		startWaiting();
+		final Task<Void> task = new OpenSessionTask(new CheckWaitTask());
+		startDaemonTask(task);
 	    } else {
 		shareButton.setText("SHARE");
 		// recorder.stopRecord();
 		shoter.stopStreaming();
 		streamer.setUploadEnable(false);
+		isSharingFired = false;
 	    }
-	    isSharingFired = !isSharingFired;
-	    stopWaiting();
 	} else {
 	    // TODO: show error
 	}
@@ -150,8 +201,8 @@ public class ConnectController extends AnchorController {
 
     public void processJoin(final ActionEvent event) throws InterruptedException {
 	logger.info("processJoin() - start: event = {}", event);
+	clearErrors();
 	if (!isSharingFired) {
-	    startWaiting();
 	    Task<Void> task = null;
 	    if (!isJoiningFired) {
 		joinButton.setText("STOP");
@@ -160,6 +211,7 @@ public class ConnectController extends AnchorController {
 		joinButton.setText("JOIN");
 		task = new DisconnectTask();
 	    }
+	    startWaiting();
 	    isJoiningFired = !isJoiningFired;
 	    Platform.runLater(task);
 	} else {
@@ -168,16 +220,23 @@ public class ConnectController extends AnchorController {
 	logger.info("processJoin() - end;");
     }
 
+    private <T> void startDaemonTask(final Task<T> task) {
+	final Thread t = new Thread(task);
+	t.setDaemon(true);
+	t.start();
+    }
+
     public void closeApp(ActionEvent event) throws Exception {
 	logger.info("closeApp() - start: event = {}", event);
 	application.exit();
 	logger.info("closeApp() - end;");
     }
 
-    private void startWaiting() {
+    private <T> void startWaiting() {
 	logger.trace("startWaiting() - start;");
 	waitPane.setVisible(true);
 	waitIndicator.setProgress(-1);
+	isWaitJobDone = false;
 	logger.trace("startWaiting() - end;");
     }
 
@@ -186,6 +245,15 @@ public class ConnectController extends AnchorController {
 	waitPane.setVisible(false);
 	waitIndicator.setProgress(1);
 	logger.trace("stopWaiting() - end;");
+    }
+
+    protected void clearErrors() {
+	errorMessage.setText("");
+    }
+
+    protected void registerError(final String method, final ErrorMessages message, final Throwable e) {
+	logger.error(method, e);
+	errorMessage.setText(message.getMessage());
     }
 
 }

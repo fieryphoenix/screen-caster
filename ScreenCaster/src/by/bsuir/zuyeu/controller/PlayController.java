@@ -25,7 +25,7 @@ import javafx.scene.input.MouseEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import by.bsuir.zuyeu.app.Main;
+import by.bsuir.zuyeu.app.ScreenCaster;
 import by.bsuir.zuyeu.service.WebStreamer;
 import by.bsuir.zuyeu.view.util.HideButtonUtil;
 
@@ -69,7 +69,7 @@ public class PlayController extends AnchorController {
 	}
     }
 
-    private Main application;
+    private ScreenCaster application;
     @FXML
     private Button stopButton;
     @FXML
@@ -89,7 +89,7 @@ public class PlayController extends AnchorController {
 
     }
 
-    public void setApp(Main application) {
+    public void setApp(ScreenCaster application) {
 	logger.info("setApp() - start;");
 	this.application = application;
 	// TODO: set file here

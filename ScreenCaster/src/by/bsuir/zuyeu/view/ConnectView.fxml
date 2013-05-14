@@ -68,6 +68,11 @@
                     <Font size="20.0" fx:id="x2" />
                   </font>
                 </Button>
+                <Text fx:id="errorMessage" fill="RED" fontSmoothingType="GRAY" layoutX="132.0" layoutY="138.0" scaleX="1.0" scaleY="1.0" strikethrough="false" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" underline="false">
+                  <font>
+                    <Font name="Arial Bold" size="16.0" />
+                  </font>
+                </Text>
               </children>
             </AnchorPane>
           </content>
@@ -103,9 +108,9 @@
         </TitledPane>
       </panes>
     </Accordion>
-    <AnchorPane fx:id="waitPane" layoutX="-1.0" layoutY="0.0" opacity="0.78" prefHeight="220.0" prefWidth="451.0" styleClass="background" visible="false">
+    <AnchorPane fx:id="waitPane" layoutX="0.0" layoutY="0.0" opacity="0.89" prefHeight="232.0" prefWidth="460.0" styleClass="background" visible="false">
       <children>
-        <ProgressIndicator fx:id="waitIndicator" layoutX="108.0" layoutY="40.0" prefHeight="127.0" prefWidth="219.0" progress="0.0" />
+        <ProgressIndicator fx:id="waitIndicator" layoutX="116.0" layoutY="47.0" prefHeight="127.0" prefWidth="219.0" progress="0.0" />
       </children>
       <effect>
         <Lighting diffuseConstant="2.0">
