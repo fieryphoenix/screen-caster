@@ -5,10 +5,7 @@
 	<classpathentry kind="con" path="at.bestsolution.efxclipse.tooling.jdt.core.JAVAFX_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/log4j"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Slf4j-Log4j"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/ApacheCommonIO"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/ApacheCommonLang"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Imgscalr"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ScreenCasterAdministrator"/>
+	<classpathentry kind="lib" path="lib/CasterAdminAPI.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

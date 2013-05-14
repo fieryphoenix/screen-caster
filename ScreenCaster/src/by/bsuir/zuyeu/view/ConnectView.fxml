@@ -8,12 +8,13 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="220.0" prefWidth="450.0" styleClass="background" xmlns:fx="http://javafx.com/fxml" fx:controller="by.bsuir.zuyeu.controller.ConnectController">
+<AnchorPane maxHeight="-1.0" maxWidth="-1.0" minHeight="-1.0" minWidth="-1.0" prefHeight="250.0" prefWidth="450.0" styleClass="background" xmlns:fx="http://javafx.com/fxml" fx:controller="by.bsuir.zuyeu.controller.ConnectController">
   <!-- TODO Add Nodes -->
   <children>
-    <MenuBar blendMode="SRC_ATOP" minHeight="-Infinity" minWidth="-Infinity" prefHeight="26.0" prefWidth="450.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+    <MenuBar blendMode="SRC_ATOP" minHeight="-1.0" minWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="225.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <effect>
         <InnerShadow />
       </effect>
@@ -36,7 +37,7 @@
         </Menu>
       </menus>
     </MenuBar>
-    <Accordion prefHeight="195.00009999999747" prefWidth="450.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
+    <Accordion prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
       <expandedPane>
         <TitledPane fx:id="x6" animated="false" prefHeight="162.0" prefWidth="434.0" text="Share">
           <content>
@@ -68,11 +69,6 @@
                     <Font size="20.0" fx:id="x2" />
                   </font>
                 </Button>
-                <Text fx:id="errorMessage" fill="RED" fontSmoothingType="GRAY" layoutX="132.0" layoutY="138.0" scaleX="1.0" scaleY="1.0" strikethrough="false" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" underline="false">
-                  <font>
-                    <Font name="Arial Bold" size="16.0" />
-                  </font>
-                </Text>
               </children>
             </AnchorPane>
           </content>
@@ -108,9 +104,9 @@
         </TitledPane>
       </panes>
     </Accordion>
-    <AnchorPane fx:id="waitPane" layoutX="0.0" layoutY="0.0" opacity="0.89" prefHeight="232.0" prefWidth="460.0" styleClass="background" visible="false">
+    <AnchorPane fx:id="waitPane" opacity="0.89" prefHeight="-1.0" prefWidth="-1.0" styleClass="background" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <children>
-        <ProgressIndicator fx:id="waitIndicator" layoutX="116.0" layoutY="47.0" prefHeight="127.0" prefWidth="219.0" progress="0.0" />
+        <ProgressIndicator fx:id="waitIndicator" layoutX="107.0" prefHeight="137.0" prefWidth="236.0" progress="-1.0" AnchorPane.topAnchor="57.0" />
       </children>
       <effect>
         <Lighting diffuseConstant="2.0">
@@ -123,6 +119,11 @@
         </Lighting>
       </effect>
     </AnchorPane>
+    <Text fx:id="errorMessage" fill="RED" fontSmoothingType="GRAY" scaleX="1.0" scaleY="1.0" strikethrough="false" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" underline="false" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="228.0">
+      <font>
+        <Font name="Arial Bold" size="16.0" />
+      </font>
+    </Text>
   </children>
   <stylesheets>
     <URL value="@../../../../style/Connect.css" />

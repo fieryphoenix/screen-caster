@@ -17,15 +17,20 @@ public final class CommandDispacther {
 	public static final CommandDispacther INSTANCE = new CommandDispacther();
     }
 
-    private Map<CommandType, ICommand<? extends Object>> commandHelper;
+    private Map<CommandType, ICommand> commandHelper;
 
     private CommandDispacther() {
 	init();
     }
 
+    public static final CommandDispacther getInstance() {
+	return InstanceHolder.INSTANCE;
+    }
+
     private void init() {
 	commandHelper = new HashMap<>(CommandType.values().length);
 	commandHelper.put(CommandType.REGISTER_NEW_ROOM, new RegisterCommand());
+	commandHelper.put(CommandType.GET_ROOM_ADDRESS, new FindClientCommand());
     }
 
     public ICommand getCommand(final CommandType commandType) {

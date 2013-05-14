@@ -25,7 +25,10 @@ import javafx.scene.input.MouseEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import by.bsuir.zuyeu.admin.api.CommandType;
+import by.bsuir.zuyeu.admin.api.SocketCasterPacket;
 import by.bsuir.zuyeu.app.ScreenCaster;
+import by.bsuir.zuyeu.service.ConnectManagerClient;
 import by.bsuir.zuyeu.service.WebStreamer;
 import by.bsuir.zuyeu.view.util.HideButtonUtil;
 
@@ -92,8 +95,6 @@ public class PlayController extends AnchorController {
     public void setApp(ScreenCaster application) {
 	logger.info("setApp() - start;");
 	this.application = application;
-	// TODO: set file here
-	// addPlayer(filePath);
 	logger.info("setApp() - end;");
     }
 
@@ -125,7 +126,6 @@ public class PlayController extends AnchorController {
 
 	final Image image = SwingFXUtils.toFXImage(bgrImage, null);
 	backgroudImageView.setImage(image);
-	// backgroudImageView.toFront();
 
 	width.bind(Bindings.selectDouble(backgroudImageView.sceneProperty(), "width"));
 	height.bind(Bindings.selectDouble(backgroudImageView.sceneProperty(), "height"));
@@ -134,14 +134,21 @@ public class PlayController extends AnchorController {
 
     public void startImageShow(final String roomNumber) {
 	logger.info("startImageShow() - start: roomNumber = {}", roomNumber);
-	// Platform.runLater(new PlayTask());
+	final ConnectManagerClient client = ConnectManagerClient.getInstance();
+	SocketCasterPacket packet = new SocketCasterPacket();
+	packet.setCommandType(CommandType.GET_ROOM_ADDRESS);
+	packet.setData(roomNumber);
 	try {
+	    packet = client.dialogToServer(packet);
+	    final Object[] data = (Object[]) packet.getData();
 	    final WebStreamer ws = new WebStreamer();
-	    final BlockingQueue<BufferedImage> imageSource = ws.down();
+	    final BlockingQueue<BufferedImage> imageSource = ws.down((String) data[0], (int) data[1]);
 	    updater = new TimerUpdater(imageSource);
 	    updater.startTimer();
-	} catch (final IOException e) {
+	} catch (ClassNotFoundException | IOException e) {
 	    logger.error("startImageShow()", e);
+	} finally {
+	    client.close();
 	}
 	logger.info("startImageShow() - end;");
     }

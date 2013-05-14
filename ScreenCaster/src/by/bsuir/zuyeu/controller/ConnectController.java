@@ -20,10 +20,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import by.bsuir.zuyeu.admin.api.CommandType;
+import by.bsuir.zuyeu.admin.api.SocketCasterPacket;
 import by.bsuir.zuyeu.app.Constants;
 import by.bsuir.zuyeu.app.ScreenCaster;
 import by.bsuir.zuyeu.exeption.ErrorMessages;
@@ -39,17 +41,52 @@ import by.bsuir.zuyeu.util.ScreenShoter;
 public class ConnectController extends AnchorController {
     private static final Logger logger = LoggerFactory.getLogger(ConnectController.class);
 
-    protected class JoinTask extends Task<Void> {
+    protected class JoinTask extends UIChainTask<Void> {
+
+	public JoinTask(Task<Void> task) {
+	    super(task);
+	}
 
 	@Override
 	protected Void call() {
 	    logger.trace("call() - start;");
 	    final String roomNumber = joinRoomNumber.getText().trim().toLowerCase();
-	    // TODO: call service to know address and join to cast
-	    application.gotoPlayVideo(roomNumber);
+	    if (StringUtils.isNotBlank(roomNumber)) {
+		SocketCasterPacket packet = new SocketCasterPacket();
+		packet.setCommandType(CommandType.GET_ROOM_ADDRESS);
+		packet.setData(roomNumber);
+		final ConnectManagerClient client = ConnectManagerClient.getInstance();
+		try {
+		    packet = client.dialogToServer(packet);
+		} catch (ClassNotFoundException | IOException e) {
+		    registerError("call", ErrorMessages.NO_SUCH_SESSION, e);
+		} finally {
+		    isWaitJobDone = true;
+		    client.close();
+		}
+		if (packet.getCommandType().equals(CommandType.REGISTER_SUCCESS)) {
+		    logger.debug("join is possible. switch view");
+		    isJoiningFired = true;
+		    switchToPlayView(roomNumber);
+		} else {
+		    writeError(ErrorMessages.NO_SUCH_SESSION);
+		}
+	    } else {
+		writeError(ErrorMessages.BLANK_FIELD);
+	    }
 	    isWaitJobDone = true;
 	    logger.trace("call() - end;");
 	    return null;
+	}
+
+	private void switchToPlayView(final String roomNumber) {
+	    Platform.runLater(new Runnable() {
+		@Override
+		public void run() {
+		    joinButton.setText("STOP");
+		    application.gotoPlayVideo(roomNumber);
+		}
+	    });
 	}
 
     }
@@ -64,22 +101,51 @@ public class ConnectController extends AnchorController {
 	protected Void call() {
 	    logger.trace("call() - start;");
 	    try {
-		ConnectManagerClient.getInstance().dialogToServer(CommandType.REGISTER_NEW_ROOM);
-		shareButton.setText("STOP");
-		try {
-		    final BlockingQueue<BufferedImage> imageStream = shoter.startFrameShoting();
-		    streamer.up(imageStream);
-		    isSharingFired = true;
-		} catch (final IOException | InterruptedException e) {
-		    registerError("call", ErrorMessages.SERVER_UNAVAILABLE, e);
+		final SocketCasterPacket resultPacket = register();
+		if (resultPacket.getCommandType().equals(CommandType.REGISTER_SUCCESS)) {
+		    shareRoomNumber.setText((String) resultPacket.getData());
+		    startStreaming();
+		} else {
+		    writeError(ErrorMessages.SESSION_BUSY);
 		}
-	    } catch (final IOException e) {
+	    } catch (final IOException | ClassNotFoundException e) {
 		registerError("call", ErrorMessages.SERVER_UNAVAILABLE, e);
 	    } finally {
 		isWaitJobDone = true;
 	    }
 	    logger.trace("call() - end;");
 	    return null;
+	}
+
+	private SocketCasterPacket register() throws ClassNotFoundException, IOException {
+	    logger.trace("register() - start;");
+	    final SocketCasterPacket sendPacket = new SocketCasterPacket();
+	    sendPacket.setCommandType(CommandType.REGISTER_NEW_ROOM);
+	    final Object[] data = new Object[2];
+	    data[0] = Constants.BROADCAST_HOST;
+	    data[1] = Constants.BROADCAST_PORT;
+	    sendPacket.setData(data);
+	    final SocketCasterPacket resultPacket = ConnectManagerClient.getInstance().dialogToServer(sendPacket);
+	    logger.trace("register() - end;");
+	    return resultPacket;
+	}
+
+	private void startStreaming() {
+	    logger.trace("startStreaming() - start;");
+	    try {
+		final BlockingQueue<BufferedImage> imageStream = shoter.startFrameShoting();
+		streamer.up(imageStream);
+		isSharingFired = true;
+		Platform.runLater(new Runnable() {
+		    @Override
+		    public void run() {
+			shareButton.setText("STOP");
+		    }
+		});
+	    } catch (final IOException | InterruptedException e) {
+		registerError("call", ErrorMessages.SERVER_UNAVAILABLE, e);
+	    }
+	    logger.trace("startStreaming() - end;");
 	}
 
     }
@@ -118,22 +184,6 @@ public class ConnectController extends AnchorController {
 
     }
 
-    protected class TEstTask extends UIChainTask<Void> {
-	public TEstTask(Task<Void> task) {
-	    super(task);
-	}
-
-	@Override
-	protected Void call() throws InterruptedException {
-	    Thread.sleep(5000);
-	    isWaitJobDone = true;
-	    return null;
-	}
-
-    }
-
-    private ScreenCaster application;
-
     @FXML
     private Button shareButton;
     @FXML
@@ -149,6 +199,7 @@ public class ConnectController extends AnchorController {
     @FXML
     private Text errorMessage;
 
+    private ScreenCaster application;
     private boolean isSharingFired;
     private boolean isJoiningFired;
     private boolean isWaitJobDone;
@@ -191,6 +242,7 @@ public class ConnectController extends AnchorController {
 		// recorder.stopRecord();
 		shoter.stopStreaming();
 		streamer.setUploadEnable(false);
+		ConnectManagerClient.getInstance().close();
 		isSharingFired = false;
 	    }
 	} else {
@@ -205,15 +257,14 @@ public class ConnectController extends AnchorController {
 	if (!isSharingFired) {
 	    Task<Void> task = null;
 	    if (!isJoiningFired) {
-		joinButton.setText("STOP");
-		task = new JoinTask();
+		task = new JoinTask(new CheckWaitTask());
 	    } else {
 		joinButton.setText("JOIN");
 		task = new DisconnectTask();
+		isJoiningFired = false;
 	    }
 	    startWaiting();
-	    isJoiningFired = !isJoiningFired;
-	    Platform.runLater(task);
+	    startDaemonTask(task);
 	} else {
 	    // TOFO: show error
 	}
@@ -253,6 +304,10 @@ public class ConnectController extends AnchorController {
 
     protected void registerError(final String method, final ErrorMessages message, final Throwable e) {
 	logger.error(method, e);
+	errorMessage.setText(message.getMessage());
+    }
+
+    protected void writeError(final ErrorMessages message) {
 	errorMessage.setText(message.getMessage());
     }
 

@@ -24,7 +24,10 @@ public abstract class UIChainTask<V> extends Task<V> {
 
     @Override
     protected void failed() {
-	logger.warn("task cancelled - skip ui task");
+	logger.warn("task cancelled - do not skip ui task");
+	if (uiTask != null) {
+	    Platform.runLater(uiTask);
+	}
     }
 
     @Override

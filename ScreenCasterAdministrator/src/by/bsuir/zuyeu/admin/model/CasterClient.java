@@ -10,22 +10,31 @@ import java.net.Socket;
  * 
  */
 public class CasterClient {
-    private final String host;
-    private final int port;
+    private String host;
+    private int port;
     private final Socket clientSocket;
 
     public CasterClient(final Socket socket) {
 	clientSocket = socket;
-	host = socket.getInetAddress().getHostAddress();
-	port = socket.getPort();
+	// TODO: think about receiving this parameters dynamically
+	// host = socket.getInetAddress().getHostAddress();
+	// port = socket.getPort();
     }
 
     public String getHost() {
 	return host;
     }
 
+    public void setHost(String host) {
+	this.host = host;
+    }
+
     public int getPort() {
 	return port;
+    }
+
+    public void setPort(int port) {
+	this.port = port;
     }
 
     public Socket getClientSocket() {

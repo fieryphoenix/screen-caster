@@ -26,6 +26,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import by.bsuir.zuyeu.app.Constants;
 import by.bsuir.zuyeu.model.image.ImagePacket;
 import by.bsuir.zuyeu.model.image.ImagePacketIndexComparator;
 import by.bsuir.zuyeu.util.ImageProcessor;
@@ -38,9 +39,6 @@ public final class WebStreamer {
     private static final Logger logger = LoggerFactory.getLogger(WebStreamer.class);
     public static final long STREAMING_DELAY = 50;
     public static final int UDP_DATAGRAM_SIZE = ImagePacket.PACKET_SIZE;
-
-    private static final String HOST = "235.1.1.2";
-    private static final int PORT = 8888;
 
     private boolean uploadEnable;
     private boolean downloadEnable;
@@ -57,7 +55,7 @@ public final class WebStreamer {
 		DatagramSocket ds = null;
 		try {
 		    ds = new DatagramSocket();
-		    final InetAddress addr = InetAddress.getByName(HOST);
+		    final InetAddress addr = InetAddress.getByName(Constants.BROADCAST_HOST);
 
 		    while (uploadEnable) {
 
@@ -87,7 +85,7 @@ public final class WebStreamer {
 
 				final byte[] writePack = byteOutStream.toByteArray();
 				logger.debug("out size = {}", writePack.length);
-				final DatagramPacket pack = new DatagramPacket(writePack, writePack.length, addr, PORT);
+				final DatagramPacket pack = new DatagramPacket(writePack, writePack.length, addr, Constants.BROADCAST_PORT);
 				ds.send(pack);
 
 				objectOutStream.close();
@@ -178,7 +176,7 @@ public final class WebStreamer {
     // return packet;
     // }
 
-    public BlockingQueue<BufferedImage> down() throws IOException {
+    public BlockingQueue<BufferedImage> down(final String host, final int port) throws IOException {
 	logger.info("down() - start();");
 	final BlockingQueue<BufferedImage> oos = new ArrayBlockingQueue<>(20);
 
@@ -190,8 +188,8 @@ public final class WebStreamer {
 		logger.trace("run() - start;");
 		MulticastSocket ds = null;
 		try {
-		    ds = new MulticastSocket(PORT);
-		    ds.joinGroup(InetAddress.getByName(HOST));
+		    ds = new MulticastSocket(port);
+		    ds.joinGroup(InetAddress.getByName(host));
 		    final List<ImagePacket> imageParts = new ArrayList<>();
 		    final byte[] datagramBuffer = new byte[ImagePacket.OBJECT_SIZE];
 		    logger.debug("connect to channel");

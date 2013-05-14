@@ -24,7 +24,7 @@ public class ScreenShoter {
     private static final Logger logger = LoggerFactory.getLogger(ScreenShoter.class);
 
     public static final int VIDEO_FRAME_RATE = 3;
-    public static final double SCALE_RATE = 0.5;
+    public static final double SCALE_RATE = 0.05;
 
     private final Robot robot;
     private final Toolkit toolkit;

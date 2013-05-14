@@ -47,7 +47,7 @@ public final class RoomDispatcher {
 	    final int part1 = (int) (roomNumber % 1000);
 	    final int part2 = (int) ((roomNumber / 1000) % 1000);
 	    final int part3 = (int) (roomNumber / 1000000);
-	    final String nextRoomNumber = String.format("%d-%d-%d", part1, part2, part3);
+	    final String nextRoomNumber = String.format("%3d-%3d-%3d", part3, part2, part1);
 	    hostedRooms.add(nextRoomNumber);
 	    logger.debug("next room number = {}", nextRoomNumber);
 	    roomNumber += skip;
@@ -80,7 +80,7 @@ public final class RoomDispatcher {
     public CasterClient findClient(final String roomNumber) {
 	logger.info("findClient() - start;");
 	final CasterClient client = bookedRooms.get(roomNumber);
-	logger.info("findClient() - end;");
+	logger.info("findClient() - end: client = {}", client);
 	return client;
     }
 

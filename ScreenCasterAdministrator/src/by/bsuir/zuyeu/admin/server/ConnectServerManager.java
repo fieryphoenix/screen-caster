@@ -20,8 +20,9 @@ import java.util.concurrent.BlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import by.bsuir.zuyeu.admin.api.CommandType;
+import by.bsuir.zuyeu.admin.api.SocketCasterPacket;
 import by.bsuir.zuyeu.admin.model.CasterClient;
+import by.bsuir.zuyeu.admin.model.CommandPacket;
 
 /**
  * @author Fieryphoenix
@@ -31,14 +32,14 @@ public class ConnectServerManager extends Observable implements Closeable {
     class ConnectListenTask implements Runnable {
 	@Override
 	public void run() {
-	    if (!isClosed) {
+	    while (!isClosed) {
 		try {
 		    final Socket socket = serverSocket.accept();
 		    final CasterClient client = new CasterClient(socket);
 		    logger.debug("new connection client = {}", client);
 		    clients.put(client);
-		    dispatchNewConnection(socket);
-		} catch (final IOException | InterruptedException e) {
+		    dispatchNewConnection(client);
+		} catch (final IOException | InterruptedException | ClassNotFoundException e) {
 		    logger.error("run()", e);
 		}
 	    }
@@ -63,7 +64,7 @@ public class ConnectServerManager extends Observable implements Closeable {
 
     public static final int MAX_CLIENTS_LOAD = 50;
     public static final String DEFAULT_HOST = "localhost";
-    public static final int DEFAULT_PORT = 10555;
+    public static final int DEFAULT_PORT = 10556;
 
     public static final int ALL_TASK_DELAY = 1000;
 
@@ -101,31 +102,65 @@ public class ConnectServerManager extends Observable implements Closeable {
 	logger.info("init() - end;");
     }
 
-    protected void dispatchNewConnection(final Socket incomingSocket) throws IOException {
+    protected CasterClient findClientBySocket(final Socket socket) {
+	logger.trace("findClientBySocket() - start;");
+	CasterClient result = null;
+	for (final CasterClient candidate : clients) {
+	    if (candidate.getClientSocket() == socket) {
+		result = candidate;
+		break;
+	    }
+	}
+	logger.trace("findClientBySocket() - end;");
+	return result;
+    }
+
+    protected void dispatchNewConnection(final CasterClient client) throws IOException, ClassNotFoundException {
 	logger.trace("dispatchNewConnection() - start;");
-	final CommandType command = readSocketCommand(incomingSocket);
+	final SocketCasterPacket socketPacket = readSocketPacket(client.getClientSocket());
+	final CommandPacket packet = new CommandPacket();
+	packet.setClient(client);
+	packet.setCommandType(socketPacket.getCommandType());
+	packet.setData(socketPacket.getData());
 	this.setChanged();
-	notifyObservers(command);
+	notifyObservers(packet);
 	logger.trace("dispatchNewConnection() - end;");
     }
 
-    protected CommandType readSocketCommand(final Socket socket) throws IOException {
-	logger.trace("readSocketCommand() - start;");
-	CommandType command = null;
+    protected SocketCasterPacket readSocketPacket(final Socket socket) throws IOException, ClassNotFoundException {
+	logger.trace("readSocketPacket() - start;");
+	SocketCasterPacket packet = null;
 	final ObjectInputStream fromClient = new ObjectInputStream(socket.getInputStream());
-	final ObjectOutputStream toClient = new ObjectOutputStream(socket.getOutputStream());
-	final long commandValue = fromClient.readLong();
-	toClient.writeLong(2);
+	packet = (SocketCasterPacket) fromClient.readObject();
 
 	socket.setKeepAlive(true);
-	command = CommandType.valueOf(commandValue);
-	logger.trace("readSocketCommand() - end: command = {}", command);
-	return command;
+	logger.trace("readSocketPacket() - end: packet = {}", packet);
+	return packet;
+    }
+
+    public void writeResultToSocket(final CommandPacket packet) throws IOException {
+	logger.trace("readSocketCommand() - start;");
+	final ObjectOutputStream toClient = new ObjectOutputStream(packet.getClient().getClientSocket().getOutputStream());
+	final SocketCasterPacket socketPacket = new SocketCasterPacket();
+	socketPacket.setCommandType(packet.getCommandType());
+	socketPacket.setData(packet.getData());
+	toClient.writeObject(socketPacket);
+	toClient.flush();
+	logger.trace("readSocketCommand() - end;");
     }
 
     private void shutdownConnections() {
 	logger.trace("shutdownConnections() - start;");
-	// TODO
+	for (final CasterClient client : clients) {
+
+	    try {
+		if (!client.getClientSocket().isClosed()) {
+		    client.getClientSocket().close();
+		}
+	    } catch (final IOException e) {
+		logger.error("shutdownConnections()", e);
+	    }
+	}
 	logger.trace("shutdownConnections() - end;");
     }
 
