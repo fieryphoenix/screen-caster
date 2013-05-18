@@ -15,21 +15,17 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import javax.imageio.ImageIO;
-
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import by.bsuir.zuyeu.app.Constants;
+import by.bsuir.zuyeu.model.image.ImageChunk;
 import by.bsuir.zuyeu.model.image.ImagePacket;
-import by.bsuir.zuyeu.model.image.ImagePacketIndexComparator;
-import by.bsuir.zuyeu.util.ImageProcessor;
+import by.bsuir.zuyeu.util.ImageUtils;
+import by.bsuir.zuyeu.util.PropertiesUtil;
 
 /**
  * @author Fieryphoenix
@@ -55,7 +51,8 @@ public final class WebStreamer {
 		DatagramSocket ds = null;
 		try {
 		    ds = new DatagramSocket();
-		    final InetAddress addr = InetAddress.getByName(Constants.BROADCAST_HOST);
+		    final InetAddress addr = InetAddress.getByName(PropertiesUtil.getProperty("multicast_host"));
+		    final int port = Integer.valueOf(PropertiesUtil.getProperty("multicast_port"));
 
 		    while (uploadEnable) {
 
@@ -64,32 +61,37 @@ public final class WebStreamer {
 			    final BufferedImage nextPooledImage = images.poll();
 			    logger.debug("pool space = {}", images.remainingCapacity());
 
-			    final byte[] originalBuffer = ImageProcessor.bufferedImageToByteArray(nextPooledImage);
-			    logger.debug("write new image, image size = {}", originalBuffer.length);
+			    final ImageChunk[] chunks = ImageUtils.splitToChunks(nextPooledImage);
 
-			    for (int offset = 0; offset < originalBuffer.length; offset += UDP_DATAGRAM_SIZE) {
-				final ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
-				final ObjectOutputStream objectOutStream = new ObjectOutputStream(byteOutStream);
+			    for (int i = 0; i < chunks.length; i++) {
+				final byte[] originalBuffer = ImageUtils.bufferedImageToByteArray(chunks[i].getImageChunk());
+				logger.debug("write new image, image size = {}", originalBuffer.length);
 
-				int length = UDP_DATAGRAM_SIZE;
-				if ((offset + length) > originalBuffer.length) {
-				    length = originalBuffer.length - offset;
+				for (int offset = 0; offset < originalBuffer.length; offset += UDP_DATAGRAM_SIZE) {
+				    final ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
+				    final ObjectOutputStream objectOutStream = new ObjectOutputStream(byteOutStream);
+
+				    int length = UDP_DATAGRAM_SIZE;
+				    if ((offset + length) > originalBuffer.length) {
+					length = originalBuffer.length - offset;
+				    }
+				    logger.debug("offset = {}, length = {}, original length = {}", new Object[] { offset, length, originalBuffer.length });
+				    final byte[] imagePart = Arrays.copyOfRange(originalBuffer, offset, offset + length);
+				    logger.debug("img part size = {}", imagePart.length);
+				    final ImagePacket packet = ImageUtils.convertToImagePacket(chunks[i]);
+				    packet.setPartIndex((offset / UDP_DATAGRAM_SIZE) + 1);
+				    packet.setData(imagePart);
+				    objectOutStream.writeObject(packet);
+				    objectOutStream.flush();
+
+				    final byte[] writePack = byteOutStream.toByteArray();
+				    logger.debug("out size = {}", writePack.length);
+				    final DatagramPacket pack = new DatagramPacket(writePack, writePack.length, addr, port);
+				    ds.send(pack);
+
+				    objectOutStream.close();
+				    byteOutStream.close();
 				}
-				logger.debug("offset = {}, length = {}, original length = {}", new Object[] { offset, length, originalBuffer.length });
-				final byte[] imagePart = Arrays.copyOfRange(originalBuffer, offset, offset + length);
-				logger.debug("img part size = {}", imagePart.length);
-				final ImagePacket packet = new ImagePacket(imagePart, (offset / UDP_DATAGRAM_SIZE) + 1);
-
-				objectOutStream.writeObject(packet);
-				objectOutStream.flush();
-
-				final byte[] writePack = byteOutStream.toByteArray();
-				logger.debug("out size = {}", writePack.length);
-				final DatagramPacket pack = new DatagramPacket(writePack, writePack.length, addr, Constants.BROADCAST_PORT);
-				ds.send(pack);
-
-				objectOutStream.close();
-				byteOutStream.close();
 			    }
 
 			} else {
@@ -119,66 +121,9 @@ public final class WebStreamer {
 	logger.info("up() - end;");
     }
 
-    // @Test
-    // public void testImageSplitting() throws Exception {
-    // final ScreenShoter screenShoter = new ScreenShoter();
-    //
-    // final List<ImagePacket> imagesParts = new ArrayList<>();
-    // final BufferedImage bufferedImage = screenShoter.newShot();
-    // final byte[] originalBuffer =
-    // ImageProcessor.bufferedImageToByteArray(bufferedImage);
-    // for (int offset = 0; offset < originalBuffer.length; offset +=
-    // UDP_DATAGRAM_SIZE) {
-    // final ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
-    // final ObjectOutputStream objectOutStream = new
-    // ObjectOutputStream(byteOutStream);
-    //
-    // int length = UDP_DATAGRAM_SIZE;
-    // if ((offset + length) > originalBuffer.length) {
-    // length = originalBuffer.length - offset;
-    // }
-    // logger.debug("offset = {}, length = {}, original length = {}", new
-    // Object[] { offset, length, originalBuffer.length });
-    // final byte[] imagePart = Arrays.copyOfRange(originalBuffer, offset,
-    // offset + length);
-    // logger.debug("img part size = {}", imagePart.length);
-    // final ImagePacket packet = new ImagePacket(imagePart, offset /
-    // UDP_DATAGRAM_SIZE);
-    //
-    // objectOutStream.writeObject(packet);
-    // objectOutStream.flush();
-    //
-    // final byte[] writePack = byteOutStream.toByteArray();
-    // logger.debug("out size = {}", writePack.length);
-    //
-    // final ByteArrayInputStream byteInputStream = new
-    // ByteArrayInputStream(writePack);
-    // final ObjectInputStream objectInStream = new
-    // ObjectInputStream(byteInputStream);
-    // final ImagePacket inPacket = (ImagePacket) objectInStream.readObject();
-    //
-    // imagesParts.add(inPacket);
-    // objectOutStream.close();
-    // byteOutStream.close();
-    // }
-    // final BufferedImage bufferedImage2 = restoreImage(imagesParts);
-    // ImageIO.write(bufferedImage2, "jpg", new File("D:/t.jpg"));
-    // }
-    //
-    // protected ImagePacket getTestImagePacket() throws IOException {
-    // final ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
-    // final ObjectOutputStream objectOutStream = new
-    // ObjectOutputStream(byteOutStream);
-    // final byte[] imagePart = new byte[ImagePacket.PACKET_SIZE];
-    //
-    // Arrays.fill(imagePart, (byte) 5);
-    // final ImagePacket packet = new ImagePacket(imagePart, 1);
-    // return packet;
-    // }
-
-    public BlockingQueue<BufferedImage> down(final String host, final int port) throws IOException {
+    public BlockingQueue<ImageChunk> down(final String host, final int port) throws IOException {
 	logger.info("down() - start();");
-	final BlockingQueue<BufferedImage> oos = new ArrayBlockingQueue<>(20);
+	final BlockingQueue<ImageChunk> oos = new ArrayBlockingQueue<>(20);
 
 	downloadEnable = true;
 	final Thread t = new Thread() {
@@ -189,6 +134,7 @@ public final class WebStreamer {
 		MulticastSocket ds = null;
 		try {
 		    ds = new MulticastSocket(port);
+		    // ds.bind(new InetSocketAddress(host, port));
 		    ds.joinGroup(InetAddress.getByName(host));
 		    final List<ImagePacket> imageParts = new ArrayList<>();
 		    final byte[] datagramBuffer = new byte[ImagePacket.OBJECT_SIZE];
@@ -208,9 +154,9 @@ public final class WebStreamer {
 			    final ImagePacket imagePacket = (ImagePacket) objectOutStream.readObject();
 
 			    if ((imageParts.size() > 0) && (imagePacket.getPartIndex() == 1)) {
-				final BufferedImage image = restoreImage(imageParts);
-				if (image != null) {
-				    oos.put(image);
+				final ImageChunk chunk = ImageUtils.restoreImage(imageParts);
+				if (chunk != null) {
+				    oos.put(chunk);
 				}
 				imageParts.clear();
 			    }
@@ -237,38 +183,6 @@ public final class WebStreamer {
 	t.start();
 	logger.info("down() - end();");
 	return oos;
-    }
-
-    private BufferedImage restoreImage(final List<ImagePacket> imageParts) {
-	logger.trace("restoreImage() - start: imageParts size = {}", imageParts.size());
-	BufferedImage bufferedImage = null;
-	Collections.sort(imageParts, new ImagePacketIndexComparator());
-	final int lastPacketIndex = imageParts.size() - 1;
-
-	// restore only images that has all its part in array
-	if (imageParts.get(lastPacketIndex).getPartIndex() == (lastPacketIndex + 1)) {
-	    final byte[] resultBuffer = constructResultBuffer(imageParts);
-	    logger.debug("result buffer length = {}", resultBuffer.length);
-	    final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(resultBuffer);
-	    try {
-		bufferedImage = ImageIO.read(byteArrayInputStream);
-	    } catch (final IOException e) {
-		logger.error("restoreImage", e);
-	    }
-	}
-	// ImageIO.createImageInputStream(input);
-	logger.trace("restoreImage() - end: bufferedImage = {}", bufferedImage);
-	return bufferedImage;
-    }
-
-    private byte[] constructResultBuffer(final List<ImagePacket> imageParts) {
-	logger.trace("constractResultBuffer() - start;");
-	byte[] resultBuffer = new byte[0];
-	for (final ImagePacket packet : imageParts) {
-	    resultBuffer = ArrayUtils.addAll(resultBuffer, packet.getData());
-	}
-	logger.trace("constractResultBuffer() - end;");
-	return resultBuffer;
     }
 
     public boolean isUploadEnable() {

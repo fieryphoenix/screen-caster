@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import by.bsuir.zuyeu.admin.api.SocketCasterPacket;
-import by.bsuir.zuyeu.app.Constants;
+import by.bsuir.zuyeu.util.PropertiesUtil;
 
 public final class ConnectManagerClient {
     private static final Logger logger = LoggerFactory.getLogger(ConnectManagerClient.class);
@@ -33,7 +33,9 @@ public final class ConnectManagerClient {
 	logger.info("dialogToServer() - start;");
 	if (socket == null) {
 	    try {
-		socket = new Socket(InetAddress.getByName(Constants.MANAGER_HOST), Constants.MANAGER_PORT);
+		final String host = PropertiesUtil.getProperty("monitor_server_host");
+		final int port = Integer.valueOf(PropertiesUtil.getProperty("monitor_server_port"));
+		socket = new Socket(InetAddress.getByName(host), port);
 		socket.setKeepAlive(true);
 	    } catch (final IOException e) {
 		logger.error("ConnectManagerClient", e);

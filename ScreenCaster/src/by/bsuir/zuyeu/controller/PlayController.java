@@ -28,8 +28,10 @@ import org.slf4j.LoggerFactory;
 import by.bsuir.zuyeu.admin.api.CommandType;
 import by.bsuir.zuyeu.admin.api.SocketCasterPacket;
 import by.bsuir.zuyeu.app.ScreenCaster;
+import by.bsuir.zuyeu.model.image.ImageChunk;
 import by.bsuir.zuyeu.service.ConnectManagerClient;
 import by.bsuir.zuyeu.service.WebStreamer;
+import by.bsuir.zuyeu.util.ImageUtils;
 import by.bsuir.zuyeu.view.util.HideButtonUtil;
 
 /**
@@ -40,10 +42,10 @@ public class PlayController extends AnchorController {
     private static final Logger logger = LoggerFactory.getLogger(PlayController.class);
 
     class TimerUpdater {
-	private final BlockingQueue<BufferedImage> imageSource;
+	private final BlockingQueue<ImageChunk> imageSource;
 	private boolean timerGo;
 
-	public TimerUpdater(final BlockingQueue<BufferedImage> imageSource) {
+	public TimerUpdater(final BlockingQueue<ImageChunk> imageSource) {
 	    this.imageSource = imageSource;
 	}
 
@@ -58,7 +60,7 @@ public class PlayController extends AnchorController {
 			this.cancel();
 		    }
 		    if (imageSource.size() > 0) {
-			final BufferedImage screenImage = imageSource.poll();
+			final ImageChunk screenImage = imageSource.poll();
 			updateImage(screenImage);
 		    }
 
@@ -80,6 +82,7 @@ public class PlayController extends AnchorController {
     // private MediaPlayer mediaPlayer;
     private TimerUpdater updater;
     private HideButtonUtil hideButtonUtil;
+    private BufferedImage bgrImage;
 
     @Override
     public void initialize(URL url, ResourceBundle rBundle) {
@@ -119,11 +122,11 @@ public class PlayController extends AnchorController {
 	logger.info("onMouseOutOfButton() - end;");
     }
 
-    protected void updateImage(final BufferedImage bgrImage) {
-	logger.trace("updateImage() - start: bgrImage = {}", bgrImage);
+    protected void updateImage(final ImageChunk chunk) {
+	logger.trace("updateImage() - start: chunk = {}", chunk);
 	final DoubleProperty width = backgroudImageView.fitWidthProperty();
 	final DoubleProperty height = backgroudImageView.fitHeightProperty();
-
+	bgrImage = ImageUtils.drawChunk(bgrImage, chunk);
 	final Image image = SwingFXUtils.toFXImage(bgrImage, null);
 	backgroudImageView.setImage(image);
 
@@ -142,7 +145,7 @@ public class PlayController extends AnchorController {
 	    packet = client.dialogToServer(packet);
 	    final Object[] data = (Object[]) packet.getData();
 	    final WebStreamer ws = new WebStreamer();
-	    final BlockingQueue<BufferedImage> imageSource = ws.down((String) data[0], (int) data[1]);
+	    final BlockingQueue<ImageChunk> imageSource = ws.down((String) data[0], (int) data[1]);
 	    updater = new TimerUpdater(imageSource);
 	    updater.startTimer();
 	} catch (ClassNotFoundException | IOException e) {
@@ -152,34 +155,5 @@ public class PlayController extends AnchorController {
 	}
 	logger.info("startImageShow() - end;");
     }
-
-    // public void addPlayer(final String source) {
-    // logger.trace("addPlayer() - start: source = {}", source);
-    // // Create the media source.
-    // // TODO: setup stream here
-    // final Media media = new Media(source);
-    //
-    // // Create the player and set to play automatically.
-    // mediaPlayer = new MediaPlayer(media);
-    // mediaPlayer.setAutoPlay(true);
-    //
-    // // Create the view and add it to the Scene.
-    // final MediaView mediaView = new MediaView(mediaPlayer);
-    // // mediaView.autosize();
-    //
-    // final DoubleProperty width = mediaView.fitWidthProperty();
-    // final DoubleProperty height = mediaView.fitHeightProperty();
-    //
-    // width.bind(Bindings.selectDouble(mediaView.sceneProperty(), "width"));
-    // height.bind(Bindings.selectDouble(mediaView.sceneProperty(), "height"));
-    //
-    // mediaView.setPreserveRatio(false);
-    // logger.warn("test stage = {}", ((AnchorPane)
-    // application.getStage().getScene().getRoot()).getChildren());
-    // ((AnchorPane)
-    // application.getStage().getScene().getRoot()).getChildren().add(mediaView);
-    // mediaView.toBack();
-    // logger.trace("addPlayer() - end;");
-    // }
 
 }

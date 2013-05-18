@@ -32,6 +32,7 @@ import by.bsuir.zuyeu.exeption.ErrorMessages;
 import by.bsuir.zuyeu.model.UIChainTask;
 import by.bsuir.zuyeu.service.ConnectManagerClient;
 import by.bsuir.zuyeu.service.WebStreamer;
+import by.bsuir.zuyeu.util.PropertiesUtil;
 import by.bsuir.zuyeu.util.ScreenShoter;
 
 /**
@@ -122,8 +123,8 @@ public class ConnectController extends AnchorController {
 	    final SocketCasterPacket sendPacket = new SocketCasterPacket();
 	    sendPacket.setCommandType(CommandType.REGISTER_NEW_ROOM);
 	    final Object[] data = new Object[2];
-	    data[0] = Constants.BROADCAST_HOST;
-	    data[1] = Constants.BROADCAST_PORT;
+	    data[0] = PropertiesUtil.getProperty("multicast_host");
+	    data[1] = Integer.valueOf(PropertiesUtil.getProperty("multicast_port"));
 	    sendPacket.setData(data);
 	    final SocketCasterPacket resultPacket = ConnectManagerClient.getInstance().dialogToServer(sendPacket);
 	    logger.trace("register() - end;");

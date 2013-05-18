@@ -3,21 +3,19 @@
  */
 package by.bsuir.zuyeu.model.image;
 
+import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
 /**
  * @author Fieryphoenix
  * 
  */
-public class ImagePacket implements Serializable {
+public class ImageChunk implements Serializable {
 
-    private static final long serialVersionUID = -3407489375939505898L;
-
-    public static final int PACKET_SIZE = 30000;
-    public static final int OBJECT_SIZE = 30120;
-
-    private byte[] data;
-    private long partIndex;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -8227741756182224375L;
 
     private int parentWidth;
     private int parentHeight;
@@ -26,23 +24,7 @@ public class ImagePacket implements Serializable {
     private int chunkWidth;
     private int chunkHeight;
 
-    protected ImagePacket() {
-	data = new byte[PACKET_SIZE];
-	partIndex = 0;
-    }
-
-    public ImagePacket(final byte[] data, final long index) {
-	this.data = data;
-	partIndex = index;
-    }
-
-    public byte[] getData() {
-	return data;
-    }
-
-    public long getPartIndex() {
-	return partIndex;
-    }
+    private BufferedImage imageChunk;
 
     public int getParentWidth() {
 	return parentWidth;
@@ -92,12 +74,12 @@ public class ImagePacket implements Serializable {
 	this.chunkHeight = chunkHeight;
     }
 
-    public void setData(byte[] data) {
-	this.data = data;
+    public BufferedImage getImageChunk() {
+	return imageChunk;
     }
 
-    public void setPartIndex(long partIndex) {
-	this.partIndex = partIndex;
+    public void setImageChunk(BufferedImage imageChunk) {
+	this.imageChunk = imageChunk;
     }
 
 }

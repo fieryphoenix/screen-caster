@@ -63,8 +63,8 @@ public class ConnectServerManager extends Observable implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(ConnectServerManager.class);
 
     public static final int MAX_CLIENTS_LOAD = 50;
-    public static final String DEFAULT_HOST = "localhost";
-    public static final int DEFAULT_PORT = 10556;
+    public static final String DEFAULT_HOST = "192.168.52.1";
+    public static final int DEFAULT_PORT = 9899;
 
     public static final int ALL_TASK_DELAY = 1000;
 
